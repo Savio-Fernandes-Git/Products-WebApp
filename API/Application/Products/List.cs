@@ -5,24 +5,32 @@ using System.Threading.Tasks;
 using MediatR;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
+using API.DTOs;
+using AutoMapper;
 
 namespace API.Application.Products
 {
     public class List
     {
-        public class Query : IRequest<List<Product>> {}
+        public class Query : IRequest<IOrderedEnumerable<ProductDetailsReadDto>> { }
 
-        public class Handler : IRequestHandler<Query, List<Product>>
+        public class Handler : IRequestHandler<Query, IOrderedEnumerable<ProductDetailsReadDto>>
         {
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IMapper _mapper;
+            public Handler(DataContext context, IMapper mapper)
             {
+                _mapper = mapper;
                 _context = context;
             }
 
-            public async Task<List<Product>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<IOrderedEnumerable<ProductDetailsReadDto>> Handle(Query request, CancellationToken cancellationToken)
             {
-                return await _context.Products.ToListAsync();
+                var rnd = new Random();
+                var query = await _context.Products.ToListAsync();
+                var result = _mapper.Map<List<ProductDetailsReadDto>>(query);
+
+                return result.OrderBy(item => rnd.Next());
             }
         }
     }

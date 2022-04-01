@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Application.Products;
+using API.DTOs;
 using API.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,21 +14,29 @@ namespace API.Controllers
     public class ProductsController : BaseApiController
     {
         [HttpPost]
-        public async Task<IActionResult> CreateAchievement([FromBody] Product product)
+        public async Task<IActionResult> CreateAchievement([FromBody] ProductsReadWriteDto productDto)
         {
-            return Ok(await Mediator.Send(new Create.Command { Product = product }));
+            var newProduct = await Mediator.Send(new Create.Command { ProductDto = productDto });
+
+            return Ok(newProduct);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts()
+        public async Task<IActionResult> GetProductsListRandomOrder()
         {
             return Ok(await Mediator.Send(new List.Query()));
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductsById(int id)
+        public async Task<IActionResult> GetProductDetailsById(int id)
         {
             return Ok(await Mediator.Send(new Details.Query { Id = id }));
+        }
+
+        [HttpGet("price/{productId}")]
+        public async Task<IActionResult> GetProductDetailsByIdWithCurrency(int productId)
+        {
+            return Ok(await Mediator.Send(new DetailsWithPrice.Query { Id = productId }));
         }
 
         [HttpPut]

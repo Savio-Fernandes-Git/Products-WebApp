@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.DTOs;
 using API.Models;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Application.Products
 {
@@ -11,7 +13,7 @@ namespace API.Application.Products
     {
         public class Command : IRequest
         {
-            public Product Product { get; set; }
+            public ProductsReadWriteDto ProductDto { get; set; }
             public class Handler : IRequestHandler<Command>
             {
                 private readonly DataContext _context;
@@ -22,7 +24,16 @@ namespace API.Application.Products
 
                 public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
                 {
-                    _context.Products.Add(request.Product);
+                    var category = await _context.Categories.Where(x => x.Categoryid == request.ProductDto.CategoryId).FirstOrDefaultAsync();
+
+                    var product = new Product
+                    {
+                        Name = request.ProductDto.Name,
+                        Price = request.ProductDto.Price,
+                        ImageUrl = request.ProductDto.ImageUrl,
+                        Category = category
+                    };
+                    _context.Products.Add(product);
                     await _context.SaveChangesAsync();
 
                     return Unit.Value;
