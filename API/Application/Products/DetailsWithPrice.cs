@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.DTOs;
 using API.Models;
 using AutoMapper;
@@ -12,12 +8,12 @@ namespace API.Application.Products
 {
     public class DetailsWithPrice
     {
-        public class Query : IRequest<ProductDetailsReadPriceDto>
+        public class Query : IRequest<List<ProductDetailsReadPriceDto>>
         {
             public int Id { get; set; }
         }
 
-        public class Handler : IRequestHandler<Query, ProductDetailsReadPriceDto>
+        public class Handler : IRequestHandler<Query, List<ProductDetailsReadPriceDto>>
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
@@ -27,20 +23,15 @@ namespace API.Application.Products
                 _context = context;
             }
 
-            public async Task<ProductDetailsReadPriceDto> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<List<ProductDetailsReadPriceDto>> Handle(Query request, CancellationToken cancellationToken)
             {
                 try
                 {
                     var query = await _context.Products
-                        .FromSqlInterpolated<Product>($"EXECUTE [dbo].GetItemDetails {request.Id}")
-                        .Select( x => new ProductDetailsReadPriceDto{
-                            Name = x.Name,
-                            Description = x.Description,
-                            Price = x.Price,
-                            Currency = x.Currency
-                        }).FirstOrDefaultAsync();
+                        .FromSqlInterpolated($"EXEC GetItemDetails {request.Id}")
+                        .ToListAsync();
 
-                    return query;
+                    return _mapper.Map<List<ProductDetailsReadPriceDto>>(query);
                 }
                 catch (System.Exception)
                 {

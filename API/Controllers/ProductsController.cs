@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.Application.Products;
 using API.DTOs;
 using API.Models;
@@ -33,7 +29,7 @@ namespace API.Controllers
             return Ok(await Mediator.Send(new Details.Query { Id = id }));
         }
 
-        [HttpGet("price/{productId}")]
+        [HttpGet("{productId}/price")]
         public async Task<IActionResult> GetProductDetailsByIdWithCurrency(int productId)
         {
             return Ok(await Mediator.Send(new DetailsWithPrice.Query { Id = productId }));
